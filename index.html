@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fiber orientation tensors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #svg-container {
+            width: 500px;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        .slider-container label {
+            display: inline-block;
+            width: 120px;
+        }
+        button, select {
+            padding: 8px 16px;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fiber orientation tensors</h1>
+    <p>Select the number of fibers:</p>
+            <div>
+                <label for="numLines">Number of fibers:</label>
+                <input type="range" id="numLines" min="1" max="1000" value="10"  oninput="updateDistribution()">
+                <span id="numLinesValue">10</span>
+            </div>
+    <p>Select a distribution type for the angle (phi) of the fibers:</p>
+    <div class="controls">
+        <select id="distType" onchange="updateSliders()">
+            <option value="uniform">Uniform</option>
+            <option value="gaussian">Gaussian</option>
+            <option value="unidirectional">Unidirectional (UD)</option>
+            <option value="planar">Planar</option>
+        </select>
+
+        <div id="gaussianSliders" class="slider-container" style="display: none;">
+            <div>
+                <label for="mean">Mean Angle (deg):</label>
+                <input type="range" id="mean" min="0" max="360" value="180" oninput="updateDistribution()">
+                <span id="meanValue">180</span>
+            </div>
+            <div>
+                <label for="variance">Variance (deg):</label>
+                <input type="range" id="variance" min="1" max="180" value="30" oninput="updateDistribution()">
+                <span id="varianceValue">30</span>
+            </div>
+        </div>
+
+        <div id="unidirectionalSliders" class="slider-container" style="display: none;">
+            <div>
+                <label for="angle">UD Angle (deg):</label>
+                <input type="range" id="angle" min="0" max="360" value="180" oninput="updateDistribution()">
+                <span id="angleValue">180</span>
+            </div>
+        </div>
+
+        <div id="planarSliders" class="slider-container" style="display: none;">
+            <div>
+                <label for="angle1">Angle 1 (deg):</label>
+                <input type="range" id="angle1" min="0" max="360" value="180" oninput="updateDistribution()">
+                <span id="angle1Value">180</span>
+            </div>
+            <div>
+                <label for="angle2">Angle 2 (deg):</label>
+                <input type="range" id="angle2" min="0" max="360" value="180" oninput="updateDistribution()">
+                <span id="angle2Value">180</span>
+            </div>
+        </div>
+
+
+
+        <button onclick="generateLines()">Generate Fibers</button>
+    </div>
+
+    <div id="svg-container">
+        <svg id="plot" width="500" height="500" viewBox="0 0 500 500">
+            <!-- Lines will be added here by JavaScript -->
+        </svg>
+    </div>
+    <div id="histogram-container">
+        <svg id="histogram" width="500" height="300" viewBox="0 0 500 300">
+            <!-- Histogram will be added here by JavaScript -->
+        </svg>
+    </div>
+
+    <div id="matrixOutput"></div>
+
+    <script>
+        let currentType = 'uniform';
+        let meanAngle = 180;
+        let variance = 30;
+        let numLines = 10;
+        let angle = 180;
+        let angle1 = 180;
+        let angle2 = 180;
+
+        let angles = [];
+
+        function printMatrix(matrix) {
+            const outputElement = document.getElementById('matrixOutput');
+            let matrixString = '';
+            for (let row of matrix) {
+                matrixString += row.join(' ') + '\n';
+            }
+            outputElement.textContent = matrixString;
+        }
+
+
+        function updateSliders() {
+            currentType = document.getElementById('distType').value;
+            const gaussianSliders = document.getElementById('gaussianSliders');
+            gaussianSliders.style.display = currentType === 'gaussian' ? 'block' : 'none';
+            const unidirectionalSliders = document.getElementById('unidirectionalSliders');
+            unidirectionalSliders.style.display = currentType === 'unidirectional' ? 'block' : 'none';
+            const planarSliders = document.getElementById('planarSliders');
+            planarSliders.style.display = currentType === 'planar' ? 'block' : 'none';
+        }
+
+        function updateDistribution() {
+            numLines = parseInt(document.getElementById('numLines').value);
+            angle = parseInt(document.getElementById('angle').value);
+            meanAngle = parseInt(document.getElementById('mean').value);
+            variance = parseInt(document.getElementById('variance').value);
+            angle1 = parseInt(document.getElementById('angle1').value);
+            angle2 = parseInt(document.getElementById('angle2').value);
+            document.getElementById('numLinesValue').textContent = numLines;
+            document.getElementById('angleValue').textContent = angle;
+            document.getElementById('meanValue').textContent = meanAngle;
+            document.getElementById('varianceValue').textContent = variance;
+            document.getElementById('angle1Value').textContent = angle1;
+            document.getElementById('angle2Value').textContent = angle2;
+        }
+
+        function generateLines() {
+            const svg = document.getElementById('plot');
+            svg.innerHTML = '';
+
+            const lineLength = 100;
+
+            angles = [];
+
+            for (let i = 0; i < numLines; i++) {
+                // Random starting position
+                const x1 = Math.random() * 500;
+                const y1 = Math.random() * 500;
+
+                // Sample angle from selected distribution
+                let phi;
+                if (currentType === 'uniform') {
+                    phi = Math.random() * 360;
+                } else if (currentType === "gaussian"){
+                    // Box-Muller transform for Gaussian distribution
+                    let u = 0, v = 0;
+                    while(u === 0) u = 1-Math.random();
+                    while(v === 0) v = Math.random();
+                    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+                    phi = meanAngle + z * Math.sqrt(variance);
+                    // Ensure phi is within 0-360 degrees
+                    phi = (phi + 360) % 360;
+                } else if (currentType === "unidirectional"){
+                    phi = angle;
+                    phi = (phi + 360) % 360;
+                } else {
+                    if( i > numLines/2 ){
+                        phi = angle1;
+                    } else {
+                        phi = angle2;
+                    }
+                }
+
+                angles.push(phi);
+
+                const rad = phi * Math.PI / 180;
+                const x2 = x1 + lineLength * Math.cos(rad);
+                const y2 = y1 + lineLength * Math.sin(rad);
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', 'blue');
+                line.setAttribute('stroke-width', '1');
+                svg.appendChild(line);
+            }
+
+
+
+            plotHistogram();
+        }
+
+        function plotHistogram() {
+            const histSvg = document.getElementById('histogram');
+            histSvg.innerHTML = '';
+
+            // Histogram parameters
+            const numBins = 360;
+            const binSize = 360 / numBins;
+            const binCounts = new Array(numBins).fill(0);
+
+            let A = [[0,0],[0,0]];
+
+            // Count angles in each bin
+            angles.forEach(angle => {
+                const binIndex = Math.floor(angle / binSize);
+                binCounts[binIndex]++;
+            });
+
+            // Find max count for scaling
+            const maxCount = Math.max(...binCounts);
+            const barWidth = 500 / numBins;
+
+            for (let i = 0; i < binCounts.length; i++) {
+                const count = binCounts[i]/numLines;
+                console.log(count);
+                const rad = i*binSize * Math.PI / 180;
+                console.log(rad);
+                A[0][0] += count*Math.cos(rad)*Math.cos(rad);
+                A[0][1] += count*Math.cos(rad)*Math.sin(rad);
+                A[1][0] += count*Math.sin(rad)*Math.cos(rad);
+                A[1][1] += count*Math.sin(rad)*Math.sin(rad);
+                const binStart = i * binSize;
+                const binEnd = (i + 1) * binSize;
+                console.log(`Bin ${i} (${binStart.toFixed(1)}° to ${binEnd.toFixed(1)}°): ${count} lines`);
+            }
+
+            printMatrix(A);
+
+            // Draw histogram bars
+            binCounts.forEach((count, i) => {
+                const barHeight = (count / maxCount) * 250;
+                const x = i * barWidth;
+                const y = 300 - barHeight;
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', barWidth - 1);
+                rect.setAttribute('height', barHeight);
+                rect.setAttribute('fill', 'orange');
+                histSvg.appendChild(rect);
+
+                // Optional: Add bin labels
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x + barWidth / 2);
+                text.setAttribute('y', 290);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '10');
+                text.textContent = `${Math.round(i * binSize)}°`;
+                histSvg.appendChild(text);
+            });
+
+            // Add axes
+            const axisX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            axisX.setAttribute('x1', 0);
+            axisX.setAttribute('y1', 300);
+            axisX.setAttribute('x2', 500);
+            axisX.setAttribute('y2', 300);
+            axisX.setAttribute('stroke', 'black');
+            histSvg.appendChild(axisX);
+
+            const axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            axisY.setAttribute('x1', 0);
+            axisY.setAttribute('y1', 0);
+            axisY.setAttribute('x2', 0);
+            axisY.setAttribute('y2', 300);
+            axisY.setAttribute('stroke', 'black');
+            histSvg.appendChild(axisY);
+        }
+
+        // Initialize
+        updateSliders();
+    </script>
+</body>
+</html>
