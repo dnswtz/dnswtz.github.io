@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stress Tensor and Displacement Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid #000;
+            margin: 20px 0;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stress Tensor and Displacement Visualizer</h1>
+    <div class="controls">
+        <label for="sigmaX">Normal Stress (σ<sub>x</sub>):</label>
+        <input type="range" id="sigmaX" min="-10" max="10" step="0.1" value="0">
+        <span id="sigmaXValue">0</span><br>
+
+        <label for="sigmaY">Normal Stress (σ<sub>y</sub>):</label>
+        <input type="range" id="sigmaY" min="-10" max="10" step="0.1" value="0">
+        <span id="sigmaYValue">0</span><br>
+
+        <label for="tauXY">Shear Stress (τ<sub>xy</sub>):</label>
+        <input type="range" id="tauXY" min="-75" max="75" step="0.1" value="0">
+        <span id="tauXYValue">0</span><br>
+    </div>
+    <canvas id="tensorCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('tensorCanvas');
+        const ctx = canvas.getContext('2d');
+        const sigmaXInput = document.getElementById('sigmaX');
+        const sigmaYInput = document.getElementById('sigmaY');
+        const tauXYInput = document.getElementById('tauXY');
+        const sigmaXValue = document.getElementById('sigmaXValue');
+        const sigmaYValue = document.getElementById('sigmaYValue');
+        const tauXYValue = document.getElementById('tauXYValue');
+
+        // Initial square coordinates
+        let originalPoints = [
+            {x: 100, y: 100},
+            {x: 300, y: 100},
+            {x: 300, y: 300},
+            {x: 100, y: 300}
+        ];
+
+        function drawSquare(points, color = 'blue') {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function applyStress(sigmaX, sigmaY, tauXY) {
+            let newPoints = originalPoints.map(p => ({x: p.x, y: p.y}));
+            // Scale and shear
+            newPoints[0].x -= sigmaX * 5;
+            newPoints[0].y -= sigmaY * 5;
+            newPoints[0].x += tauXY * (newPoints[0].y - 200) / 100;
+            newPoints[0].y += tauXY * (newPoints[0].x - 200) / 100;
+           
+            newPoints[1].x += sigmaX * 5;
+            newPoints[1].y -= sigmaY * 5;
+            newPoints[1].x += tauXY * (newPoints[1].y - 200) / 100;
+            newPoints[1].y += tauXY * (newPoints[1].x - 200) / 100;
+
+
+            newPoints[2].x += sigmaX * 5;
+            newPoints[2].y += sigmaY * 5;
+            newPoints[2].x += tauXY * (newPoints[2].y - 200) / 100;
+            newPoints[2].y += tauXY * (newPoints[2].x - 200) / 100;
+
+            newPoints[3].x -= sigmaX * 5;
+            newPoints[3].y += sigmaY * 5;
+            newPoints[3].x += tauXY * (newPoints[3].y - 200) / 100;
+            newPoints[3].y += tauXY * (newPoints[3].x - 200) / 100;
+
+
+	     return newPoints;
+        }
+
+        function updateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const sigmaX = parseFloat(sigmaXInput.value);
+            const sigmaY = parseFloat(sigmaYInput.value);
+            const tauXY = parseFloat(tauXYInput.value);
+
+            sigmaXValue.textContent = sigmaX;
+            sigmaYValue.textContent = sigmaY;
+            tauXYValue.textContent = tauXY;
+
+            drawSquare(originalPoints, 'gray');
+            const deformedPoints = applyStress(sigmaX, sigmaY, tauXY);
+            drawSquare(deformedPoints, 'red');
+        }
+
+        sigmaXInput.addEventListener('input', updateCanvas);
+        sigmaYInput.addEventListener('input', updateCanvas);
+        tauXYInput.addEventListener('input', updateCanvas);
+
+        updateCanvas();
+    </script>
+</body>
+</html>
+
