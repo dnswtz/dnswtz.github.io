@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classical Laminate Theory</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --header-color: #343a40;
+            --accent-color: #007bff;
+            --note-bg: #e7f1ff;
+            --note-border: #b8daff;
+            --code-bg: #f1f1f1;
+            --sidebar-bg: #343a40;
+            --sidebar-text: #adb5bd;
+        }
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e1e1e1;
+            --header-color: #e1e1e1;
+            --accent-color: #0d6efd;
+            --note-bg: #1a1a2e;
+            --note-border: #16213e;
+            --code-bg: #2d2d2d;
+            --sidebar-bg: #1a1a2e;
+            --sidebar-text: #adb5bd;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            overflow: auto;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.collapsed {
+            transform: translateX(-270px);
+        }
+        .sidebar h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+            border-bottom: 1px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin: 10px 0;
+        }
+        .sidebar a {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .sidebar a:hover {
+            color: var(--accent-color);
+        }
+        .main {
+            margin-left: 270px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            transition: margin 0.3s ease;
+        }
+        .main.full-width {
+            margin-left: 30px;
+        }
+	.tooltip {
+	    position: relative;
+	    display: inline-block;
+	    border-bottom: 1px dotted var(--accent-color);
+	    cursor: help;
+	}
+
+	.tooltip .tooltiptext {
+	    visibility: hidden;
+	    width: 200px;
+	    background-color: var(--note-bg);
+	    color: var(--text-color);
+	    text-align: center;
+	    border-radius: 6px;
+	    padding: 5px;
+	    position: absolute;
+	    z-index: 1;
+	    bottom: 125%;
+	    left: 50%;
+	    margin-left: -100px;
+	    opacity: 0;
+	    transition: opacity 0.3s;
+	    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	}
+
+	.tooltip:hover .tooltiptext {
+	    visibility: visible;
+	    opacity: 1;
+	}
+
+	.sticky-header {
+	    position: sticky;
+	    top: 0;
+	    background-color: var(--bg-color);
+	    padding: 10px 0;
+	    z-index: 10;
+	    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+	    margin-top: -10px;
+	    margin-bottom: 10px;
+	    border-radius: 0 0 5px 5px;
+	}
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 1.5em;
+        }
+        h1 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+        .note {
+            background-color: var(--note-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .reminder {
+            background-color: var(--note-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .equation {
+            text-align: center;
+            margin: 25px 0;
+            padding: 15px;
+            background-color: var(--code-bg);
+            border-radius: 5px;
+        }
+        pre {
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+	.collapsible-block {
+	    margin: 20px 0;
+	    border: 1px solid var(--accent-color);
+	    border-radius: 5px;
+	    overflow: hidden;
+	}
+
+	.collapsible-header {
+	    background-color: var(--accent-color);
+	    color: white;
+	    padding: 10px 15px;
+	    cursor: pointer;
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	}
+
+	.collapsible-content {
+	    display: none;
+	    padding: 15px;
+	    background-color: var(--note-bg);
+	    color: var(--text-color);
+	}
+
+	.collapsible-content.show {
+	    display: block;
+	}
+
+	.collapsible-content pre {
+	    margin: 0;
+	    white-space: pre-wrap;
+	}
+
+        .theme-toggle, .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--header-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                transform: none;
+            }
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <h3>Contents</h3>
+            <ul>
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#main-content">Main Content</a></li>
+                <li><a href="#summary">Summary</a></li>
+                <li><a href="#references">References</a></li>
+            </ul>
+        </aside>
+        <main class="main" id="main">
+            <header>
+                <div>
+                    <h1>Classical Laminate Theory</h1>
+                </div>
+                <div>
+                    <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+                </div>
+            </header>
+
+            <section id="introduction">
+                <h2>Introduction</h2>
+                <p>
+		    Classical laminate theory can be used to describe the behavior of multidirectional laminates, based on the stacking sequence of individual layers. Concepts, such as the influence of temperature and humidity will also be discussed within this scope.
+                </p>
+            </section>
+
+            <section id="strain-displacement">
+                <h2>Strain Displacement Relations</h2>
+                <p>
+		    For a single laminate, the displacement of a reference plane can be described by \(u_0 = u_0(x,y)\) and \(v_0 = v_0(x,y)\) for the in plane displacement in the x and y direction, while the out of plane displacement in the z-direction is described by \(w = f(x,y)\). In general, a point \(B\) somewhere on the laminate, will be displaced by
+
+                    \[
+                    	u = u_0-z*\frac{\partial w}{\partial x}
+                    \] 
+			and
+                    \[
+                    	v = v_0-z*\frac{\partial w}{\partial y}
+                    \]
+		    for the displacement in \(x\) and \(y\) direction. The partial derivatives, based on the strain-displacement relation, result in the strain of the material,
+		    \[
+			\varepsilon_x = \frac{\partial u}{\partial x} = \frac{\partial u_0}{\partial x}-z*\frac{\partial^2 w}{\partial x^2}
+		    \]
+		    \[
+			\varepsilon_y = \frac{\partial v}{\partial y} = \frac{\partial v_0}{\partial y}-z*\frac{\partial^2 w}{\partial y^2}
+		    \] and
+		    \[
+			\gamma_{xy} = \frac{\partial u}{\partial y}+\frac{\partial v}{\partial x}
+		    \]
+		    We shall take a layer \(k\) located at \(\overline{z}_k\) from a multidirectional laminate and analyze the stress-strain relations: in the coordinate system of the layer, these are
+		    \[
+			\begin{bmatrix}
+			    \sigma_1 \\
+			    \sigma_2 \\
+			    \tau_{12} 	        
+			\end{bmatrix}_k = 
+			\begin{bmatrix}
+			    Q_{11} & Q_{12} & 0 \\
+			    Q_{21} & Q_{22} & 0 \\
+			    0 & 0 & Q_{33} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \varepsilon_1 \\
+			    \varepsilon_2 \\
+			    \gamma_{12} 	        
+			\end{bmatrix}_k 
+		    \]	
+                <div class="note">
+                    <strong>Note:</strong>
+		    In our notation, the subscript \(k\) indicates that we are currently looking a laminate in layer \(k\) of the entire structure. The use of numbers as indices, indicates that we are in a local coordinate system.
+                </div>
+	<div class="collapsible-block">
+	    <div class="collapsible-header" onclick="toggleBlock(this)">
+	        <span>Stress-strain visual example</span>
+	        <span>▼</span>
+	    </div>
+	    <div class="collapsible-content">
+		TODO: add javascript applet to visualize stress strain in singly layer
+	    </div>
+	</div>
+
+	    	Generalizing to the coordinate system of the laminate structure, the stress-strain relation yiels the following structure, which is obtained by multiplying each element of the equation with a <span class="tooltip">rotational tensor<span class="tooltiptext">\(R\sigma = RQ\underbrace{R^{-1}R}_\mathbf{1}\varepsilon\).</span></span>, which leads to the generalized form of hte stres-strain relation:
+		    \[
+			\begin{bmatrix}
+			    \sigma_x \\
+			    \sigma_y \\
+			    \tau_{xy} 	        
+			\end{bmatrix}_k = 
+			\begin{bmatrix}
+			    Q_{xx} & Q_{xy} & Q_{xz} \\
+			    Q_{yx} & Q_{yy} & Q_{yz} \\
+			    Q_{zx} & Q_{zy} & Q_{zz} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \varepsilon_x \\
+			    \varepsilon_y \\
+			    \gamma_{xy} 	        
+			\end{bmatrix}_k 
+		    \]	
+                <div class="note">
+                    <strong>Note:</strong>
+		    Since we have rotated the original notation into the global coordinate system of the entire laminate, we have updated the notation. Whenever we use a global coordinate system, we will indicate this by representing the axis with letters, instead of numbers.
+		</div>
+            </section>
+            <section id="forces-moments">
+                <h2>Forces and Moments</h2>
+                <p>
+		    It is often convenient to express forces and moments as functions of laminate deformations. This can be done by substitung general load-deformation relations. 
+                </p>
+	<div class="collapsible-block">
+	    <div class="collapsible-header" onclick="toggleBlock(this)">
+	        <span><strong> Reminder: </strong> Forces and moments</span>
+	        <span>▼</span>
+	    </div>
+	    <div class="collapsible-content">
+		    The forces \(\textbf{N}\) and moments \(\textbf{M}\) can be obtained through the following relations:
+		    \[
+			N_x^k = \int_{-t/2}^{t/2}\sigma_xdz\hspace{0.5cm}
+			N_y^k = \int_{-t/2}^{t/2}\sigma_ydz\hspace{0.5cm}
+			N_{xy}^k = \int_{-t/2}^{t/2}\sigma_{xy}dz 
+		    \]
+			and
+		    \[
+			M_x^k = \int_{-t/2}^{t/2}\sigma_xzdz\hspace{0.5cm}
+			M_y^k = \int_{-t/2}^{t/2}\sigma_yzdz\hspace{0.5cm}
+			M_{xy}^k = \int_{-t/2}^{t/2}\sigma_{xy}zdz
+		    \]
+		    in which \(z\) is a coordinate in the through-plane and \(t\) is the layer thickness.
+	    </div>
+	</div>
+		The total forces and moments in multilayer laminates can be obtained by summing the individual contributions of each layer \(\textbf{N}_k\) and \(\textbf{M}_k\) over all layers
+	    </section>
+            <section id="summary">
+                <h2>Summary</h2>
+                <p>
+                    Summarize your key points here.
+                </p>
+            </section>
+
+            <section id="references">
+                <h2>References</h2>
+                <ul>
+                    <li>Reference 1</li>
+                    <li>Reference 2</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full-width');
+        }
+        // Sticky section headers
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const h2 = entry.target.querySelector('h2');
+                    if (entry.isIntersecting) {
+                        h2.classList.add('sticky-header');
+                    } else {
+                        h2.classList.remove('sticky-header');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "-50px 0px -50% 0px" });
+
+            sections.forEach(section => observer.observe(section));
+        });
+    	function toggleBlock(header) {
+        	const content = header.nextElementSibling;
+        	const arrow = header.querySelector('span:last-child');
+
+        	content.classList.toggle('show');
+        	arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+    	}
+
+    </script>
+</body>
+</html>
+
