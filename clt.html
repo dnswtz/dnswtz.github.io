@@ -58,7 +58,7 @@
         .sidebar h3 {
             color: var(--accent-color);
             margin-top: 0;
-            border-bottom: 1px solid var(--accent-color);
+            bor		der-bottom: 1px solid var(--accent-color);
             padding-bottom: 10px;
         }
         .sidebar ul {
@@ -164,6 +164,12 @@
             background-color: var(--code-bg);
             border-radius: 5px;
         }
+	.grid {
+	    display: grid; 
+	    grid-template-columns: repeat(4, 1fr); 
+	    gap: 8px; 
+	    max-width: 600px;
+	}
         pre {
             background: var(--code-bg);
             padding: 15px;
@@ -236,10 +242,9 @@
         <aside class="sidebar" id="sidebar">
             <h3>Contents</h3>
             <ul>
-                <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#main-content">Main Content</a></li>
-                <li><a href="#summary">Summary</a></li>
-                <li><a href="#references">References</a></li>
+                <li><a href="https://www.dnswtz.github.io/clt.html">Classical Laminate Theory</a></li>
+                <li><a href="https://www.dnswtz.github.io/stressstrain.html">Stress-strain</a></li>
+                <li><a href="https://www.dnswtz.github.io/fiberorientationtensors.html">Fiber orientation tensors</a></li>
             </ul>
         </aside>
         <main class="main" id="main">
@@ -274,15 +279,15 @@
                     \]
 		    for the displacement in \(x\) and \(y\) direction. The partial derivatives, based on the strain-displacement relation, result in the strain of the material,
 		    \[
-			\varepsilon_x = \frac{\partial u}{\partial x} = \frac{\partial u_0}{\partial x}-z*\frac{\partial^2 w}{\partial x^2}
+			\varepsilon_x = \frac{\partial u}{\partial x} = \frac{\partial u_0}{\partial x}-z*\frac{\partial^2 w}{\partial x^2} = \varepsilon_x^0 + \kappa_x
 		    \]
 		    \[
-			\varepsilon_y = \frac{\partial v}{\partial y} = \frac{\partial v_0}{\partial y}-z*\frac{\partial^2 w}{\partial y^2}
+			\varepsilon_y = \frac{\partial v}{\partial y} = \frac{\partial v_0}{\partial y}-z*\frac{\partial^2 w}{\partial y^2} = \varepsilon_y^0 + \kappa_y
 		    \] and
 		    \[
-			\gamma_{xy} = \frac{\partial u}{\partial y}+\frac{\partial v}{\partial x}
+			\gamma_{xy} = \frac{\partial u}{\partial y}+\frac{\partial v}{\partial x} = \gamma_{xy}^0 + \kappa_{xy}
 		    \]
-		    We shall take a layer \(k\) located at \(\overline{z}_k\) from a multidirectional laminate and analyze the stress-strain relations: in the coordinate system of the layer, these are
+		    Here the \(0\) indicates an in-plane strain and the \(\kappa\) represents an out-of-plane curvature. We shall take a layer \(k\) located at \(\overline{z}_k\) from a multidirectional laminate and analyze the stress-strain relations: in the coordinate system of the layer, these are
 		    \[
 			\begin{bmatrix}
 			    \sigma_1 \\
@@ -306,11 +311,28 @@
                 </div>
 	<div class="collapsible-block">
 	    <div class="collapsible-header" onclick="toggleBlock(this)">
-	        <span>Stress-strain visual example</span>
+	        <span><strong>Example:</strong> Stress-strain visualization</span>
 	        <span>▼</span>
 	    </div>
 	    <div class="collapsible-content">
-		TODO: add javascript applet to visualize stress strain in singly layer
+		What does all of this mean? Below is an illustrative example, which you can play with to visualize the stress-strain relationship of a ply with the properties of a typical orthotropic material. Add an in-plane stress of your choice and watch the laminate deform accordingly. The math that goes into calculating the deformation is shown below the applet.
+		<div class="grid">
+		    <!-- Compliance matrix entries -->
+		    <label for="s11">S₁₁ (1/Pa)</label><input id="s11" type="number" step="1e-12" value="1.25e-11">
+		    <label for="s12">S₁₂ (1/Pa)</label><input id="s12" type="number" step="1e-12" value="2.5e-12">
+		    <label for="s22">S₂₂ (1/Pa)</label><input id="s22" type="number" step="1e-12" value="1.67e-11">
+		    <label for="s66">S₆₆ (1/Pa)</label><input id="s66" type="number" step="1e-12" value="4.0e-11">
+
+		    <!-- Stresses -->
+		    <label for="sx">σₓ (Pa)</label><input id="sx" type="number" step="1e6" value="1e6">
+		    <label for="sy">σᵧ (Pa)</label><input id="sy" type="number" step="1e6" value="0">
+		    <label for="txy">τₓᵧ (Pa)</label><input id="txy" type="number" step="1e6" value="0">
+
+		    <!-- Buttons -->
+		    <div></div>
+		    <button id="updateBtn" style="grid-column: span 3; padding:8px;">Update</button>
+		</div>
+		The structure of our material does not allow stress or strain in the z direction. For this reason, the curvatures in the z direction are negligible. We know that the stress-strain relationship is given by \([\sigma] = [Q]\cdot[\varepsilon]\). Inverting the stiffness matrix (giving us the compliance matrix) and multiplying from the left, we get the strain of the material. The displacement of each point is then given by simple algebra.
 	    </div>
 	</div>
 
@@ -363,7 +385,119 @@
 		    in which \(z\) is a coordinate in the through-plane and \(t\) is the layer thickness.
 	    </div>
 	</div>
-		The total forces and moments in multilayer laminates can be obtained by summing the individual contributions of each layer \(\textbf{N}_k\) and \(\textbf{M}_k\) over all layers
+		The total forces and moments in multilayer laminates can be obtained by summing the individual contributions of each layer \(\textbf{N}_k\) and \(\textbf{M}_k\) over all layers,
+		    \[
+			\begin{bmatrix}
+			    N_x \\
+			    N_y \\
+			    N_{xy}
+			\end{bmatrix} = 
+			\sum_{k=1}^n\int_{z_{k-1}}^{z_k}
+			\begin{bmatrix}
+			    \sigma_x \\
+			    \sigma_y \\
+			    \sigma_{xy}
+			\end{bmatrix}_k dz
+		    \]
+		    and
+		    \[
+			\begin{bmatrix}
+			    M_x \\
+			    M_y \\
+			    M_{xy}
+			\end{bmatrix} = 
+			\sum_{k=1}^n\int_{z_{k-1}}^{z_k}
+			\begin{bmatrix}
+			    \sigma_x \\
+			    \sigma_y \\
+			    \sigma_{xy}
+			\end{bmatrix}_k zdz
+		    \]
+		in which \(z_{k-1}\) is the bottom coordinate of the \(k^\text{th}\) layer. We can further split up the strain into the in-plane strain and the curvatures, we had briefly touched upon earlier. With these in mind, the previous equation may be written as
+		    \[
+			\begin{bmatrix}
+			    N_x \\
+			    N_y \\
+			    N_{xy}
+			\end{bmatrix} = 
+			\sum_{k=1}^n
+			\begin{bmatrix}
+			    Q_{xx} & Q_{xy} & Q_{xz} \\
+			    Q_{yx} & Q_{yy} & Q_{yz} \\
+			    Q_{zx} & Q_{zy} & Q_{zz} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \varepsilon_x^0 \\
+			    \varepsilon_y^0 \\
+			    \gamma_{xy}^0 	        
+			\end{bmatrix}_k \int_{z_{k-1}}^{z_k} dz + 
+			\begin{bmatrix}
+			    Q_{xx} & Q_{xy} & Q_{xz} \\
+			    Q_{yx} & Q_{yy} & Q_{yz} \\
+			    Q_{zx} & Q_{zy} & Q_{zz} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \kappa_x \\
+			    \kappa_y \\
+			    \kappa_{xy} 	        
+			\end{bmatrix}_k \int_{z_{k-1}}^{z_k} zdz 
+		    \]
+			for forces, and for the moments we write
+		    \[
+			\begin{bmatrix}
+			    M_x \\
+			    M_y \\
+			    M_{xy}
+			\end{bmatrix} = 
+			\sum_{k=1}^n
+			\begin{bmatrix}
+			    Q_{xx} & Q_{xy} & Q_{xz} \\
+			    Q_{yx} & Q_{yy} & Q_{yz} \\
+			    Q_{zx} & Q_{zy} & Q_{zz} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \varepsilon_x^0 \\
+			    \varepsilon_y^0 \\
+			    \gamma_{xy}^0 	        
+			\end{bmatrix}_k \int_{z_{k-1}}^{z_k} z dz + 
+			\begin{bmatrix}
+			    Q_{xx} & Q_{xy} & Q_{xz} \\
+			    Q_{yx} & Q_{yy} & Q_{yz} \\
+			    Q_{zx} & Q_{zy} & Q_{zz} 	        
+			\end{bmatrix}_k 
+			\begin{bmatrix}
+			    \kappa_x \\
+			    \kappa_y \\
+			    \kappa_{xy} 	        
+			\end{bmatrix}_k \int_{z_{k-1}}^{z_k} z^2dz 
+		    \]
+                <div class="note">
+                    <strong>Note:</strong>
+		    In these equations, we are using a core simplification of the classical laminate theory: individual laminates are considered to be so thin, that the stresses do not change over the thickness of individual laminas. This simplification allows us to treat the stresses as constant with respect to the thickness of the laminate and we can take the vector out of the integral without violating any principles.
+                </div>
+		    Although it may look scary, these are simply the combined effects of the in-plane displacement and the curvature on the forces and moments. The difference between both equations being, that the moments are integrated over the z-coordinate in each layer. Looking closer at the structure of both equations, we can see that they are very similar. In fact, the second components of the forces and the first component of the moments is even the same. We may use this to simplify our equations. This gives rise to the concept of the <strong>ABD-Matrix</strong>, which we obtain by rewriting the previous equation for the forces and moments, into a slightly shorter version:
+		    \[
+			[N]_{x,y} = \underbrace{\sum_{k=1}^n[Q]_{x,y}^k\int_{z_{t-1}}^{z_t}dz}_A*[\varepsilon^0]_{x,y}+\underbrace{\sum_{k=1}^n[Q]_{x,y}^k\int_{z_{t-1}}^{z_t}zdz}_{B}*[\kappa]_{x,y}
+		    \]
+		    \[
+			[M]_{x,y} = \underbrace{\sum_{k=1}^n[Q]_{x,y}^k\int_{z_{t-1}}^{z_t}zdz}_B*[\varepsilon^0]_{x,y}+\underbrace{\sum_{k=1}^n[Q]_{x,y}^k\int_{z_{t-1}}^{z_t}z^2dz}_{D}*[\kappa]_{x,y}
+		    \]
+		These elements, denoted by the underbrace, correspond to the <strong>ABD-Matrix</strong>. Their significance is related to the fact, that they present a method to couple the forces to the moments. In matrix notation, we write them as 
+		    \[
+			\begin{bmatrix}
+				N \\
+				M
+			\end{bmatrix} = 
+			\begin{bmatrix}
+				A & B \\
+				B & D
+			\end{bmatrix} 
+			\begin{bmatrix}
+				\varepsilon^0 \\
+				\kappa
+			\end{bmatrix}  
+		    \] 
+		The entries in the matrices are derived from the geometry, material properties and even the stacking sequence of individual plies.
 	    </section>
             <section id="summary">
                 <h2>Summary</h2>
