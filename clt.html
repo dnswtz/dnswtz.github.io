@@ -261,7 +261,7 @@
             <section id="introduction">
                 <h2>Introduction</h2>
                 <p>
-		    Classical laminate theory can be used to describe the behavior of multidirectional laminates, based on the stacking sequence of individual layers. Concepts, such as the influence of temperature and humidity will also be discussed within this scope.
+		    Classical laminate theory can be used to describe the behavior of multidirectional laminates, based on the stacking sequence of individual layers. Concepts, such as the influence of temperature and humidity will also be discussed within this scope. The material shown here, is very strongly related to the book <em> Engineering Mechanics of Composite Materials </em> by Isaac Daniel and Ori Ishai.
                 </p>
             </section>
 
@@ -497,7 +497,17 @@
 				\kappa
 			\end{bmatrix}  
 		    \] 
-		The entries in the matrices are derived from the geometry, material properties and even the stacking sequence of individual plies.
+		The entries in the matrices are derived from the geometry, material properties and even the stacking sequence of individual plies. The entries of the different matrices can be calucalted as 
+		   \[
+			A_{ij} = \sum_{k=1}^nQ_{ij}^k(z_k-z_{k-1})
+		   \]
+		   \[
+			B_{ij} = \sum_{k=1}^nQ_{ij}^k(z_k^2-z_{k-1}^2)
+		   \]
+		   \[
+			A_{ij} = \sum_{k=1}^nQ_{ij}^k(z_k^3-z_{k-1}^3}
+		   \]
+		All matrices are symmetric. The \(A_{ij}\) relate loads resulting from the plane onto strain in the plane. The \(B_{ij}\) are coupling stiffnesses and relate in-plane loads to curvatures and moments to in-plane strains. The values \(D_{ij}\) relates the bending stiffness to curvatures.
 	    </section>
             <section id="summary">
                 <h2>Summary</h2>
